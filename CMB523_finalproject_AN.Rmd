@@ -1,0 +1,51 @@
+---
+title: "week 10_AN"
+author: "Angela Nolan"
+date: "2024-04-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+#4/3/24 
+# downloaded the package from https://bioconductor.org/packages/release/bioc/html/openPrimeR.html
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("openPrimeR")
+
+library(openPrimeR)
+
+#4/17/24 after installing the packagesm there are missing/non functional external tools
+#MElTING (to compute melting temps for PCR) is no longer avaliable due to low usage 
+#VIENA RNA (for secondary structure prediction) cannot be done in rstudio (it is done in linux). I have basic knowledge with linux so if i have additional time i can work through the package
+#OligoArrayAux (primer efficency computations) cannot be done in rstudio (it is done in linux). I have basic knowledge with linux so if i have additional time i can work through the package. this is done by the DECIPHER packge in rstudio so I am going to install that from bioconductor and see what I can do with it 
+#i dont think we will need to use the pandoc program (creates pdf reports)
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DECIPHER")
+```
+
+```{r}
+###LOADING DATA
+
+#we are going to load a template sequence (BRCA 1 gene) first to see how the script runs, and then load more once we are sucessful
+# Specify a FASTA file containing the templates:
+fasta.file <- system.file("extdata", "IMGT_data", "templates", 
+                "BRCA1.fasta", package = "openPrimeR")
+# Load the template sequences from 'fasta.file'
+seq.df.simple <- read_templates(fasta.file)
+system.
+```
+
