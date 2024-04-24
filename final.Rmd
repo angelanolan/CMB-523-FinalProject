@@ -1,0 +1,465 @@
+okay this is the first attempt using biostrings
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(40, 60)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 1000, replace = TRUE))
+
+# Function to calculate melting temperature (Tm) of a primer sequence
+calculate_tm <- function(primer_sequence) {
+  gc_content <- sum(primer_sequence == "G" | primer_sequence == "C") / length(primer_sequence)
+  Tm <- 64.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+  return(Tm)
+}
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sapply(candidate_primers, function(seq) {
+    gc_content <- sum(seq == "G" | seq == "C") / nchar(seq)
+    gc_content >= gc_content_range[1] & gc_content <= gc_content_range[2]
+  })
+]
+
+# Calculate melting temperatures for filtered primers
+melting_temperatures <- sapply(filtered_primers, calculate_tm)
+
+# View the filtered primers and their melting temperatures
+primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+print(primer_df)
+
+```
+
+take 2 
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(40, 60)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 1000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sapply(candidate_primers, function(seq) {
+    gc_content <- sum(seq == "G" | seq == "C") / nchar(seq)
+    gc_content >= gc_content_range[1] & gc_content <= gc_content_range[2]
+  })
+]
+
+# Function to calculate melting temperature (Tm) of a primer sequence
+calculate_tm <- function(primer_sequence) {
+  gc_content <- sum(primer_sequence == "G" | primer_sequence == "C") / length(primer_sequence)
+  Tm <- 64.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+  return(Tm)
+}
+
+# Calculate melting temperatures for filtered primers
+melting_temperatures <- sapply(filtered_primers, calculate_tm)
+
+# View the filtered primers and their melting temperatures
+primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+print(primer_df)
+```
+take 2 trying to change the sapply
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(40, 60)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 1000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sapply(candidate_primers, function(seq) {
+    gc_content <- sum(seq == "G" | seq == "C") / nchar(seq)
+    gc_content >= gc_content_range[1] & gc_content <= gc_content_range[2]
+  })
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else {
+  # Function to calculate melting temperature (Tm) of a primer sequence
+  calculate_tm <- function(primer_sequence) {
+    gc_content <- sum(primer_sequence == "G" | primer_sequence == "C") / length(primer_sequence)
+    Tm <- 64.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  }
+
+  # Calculate melting temperatures for filtered primers
+  melting_temperatures <- sapply(filtered_primers, calculate_tm)
+
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+}
+```
+
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(40, 60)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 1000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 >= gc_content_range[1] &  # Change made here
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 <= gc_content_range[2]  # Change made here
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else {
+  # Calculate melting temperatures for filtered primers
+  melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 64.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+}
+
+```
+trying again but changing the numbers to find the critera for there to be a primer
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(40, 60)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 100, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 20 >= gc_content_range[1] &  # Change made here
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 20 <= gc_content_range[2]  # Change made here
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else {
+  # Calculate melting temperatures for filtered primers
+  melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 64.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+}
+```
+take 2 of changing numbers 
+you can see here that we clicked print in different locations in order to see where maybe the issue lies
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(45, 55)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 1000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 10 >= gc_content_range[1] &  # Change made here
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 10 <= gc_content_range[2]  # Change made here
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else { melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 54.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+print(melting_temperatures)
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+   print(candidate_primers)
+}
+```
+
+okay mow im going to code to find out the GC content in order to make my primer critera
+```{r}
+# Load required libraries
+library(Biostrings)
+
+# Read the FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"  # Replace with the path to your FASTA file
+fasta_sequences <- readDNAStringSet(fasta_file)
+
+# Extract the DNA sequence from the FASTA file
+dna_sequence <- as.character(fasta_sequences[[1]])  # Assuming there's only one sequence in the file
+
+# Count the occurrences of G and C bases
+gc_count <- sum(unlist(gregexpr("G", dna_sequence)), unlist(gregexpr("C", dna_sequence)))
+
+# Calculate the GC content percentage
+gc_content <- (gc_count / nchar(dna_sequence)) * 100
+
+# Print the GC content
+print(gc_content)
+
+```
+
+
+okay so the GC content is 4380691 so that is around 43% so im going to retry with different critera
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(35, 50)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 5000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 >= gc_content_range[1] &  # Change made here
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 <= gc_content_range[2]  # Change made here
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else { melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 54.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+print(melting_temperatures)
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+   print(candidate_primers)
+}
+```
+
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read DNA sequence from a FASTA file
+fasta_file <- "~/Desktop/sequence.fasta"
+dna_sequence <- readDNAStringSet(fasta_file)
+
+# Define primer design criteria
+primer_length <- 30
+gc_content_range <- c(20, 90)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 10000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 >= gc_content_range[1] &  # Change made here
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 <= gc_content_range[2]  # Change made here
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else { melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 54.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+print(melting_temperatures)
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+   print(candidate_primers)
+}
+```
+
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read the FASTA file containing the BRCA1 sequence
+fasta_file <- "~/Desktop/sequence.fasta"
+brca1_sequence <- readDNAStringSet(fasta_file)
+
+# Define the start and end positions of exon 1 (hypothetical values)
+exon1_start <- 100
+exon1_end <- 500
+
+# Extract the target sequence of exon 1
+exon1_sequence <- subseq(brca1_sequence, start = exon1_start, end = exon1_end)
+
+# Print the exon 1 sequence
+print(exon1_sequence)
+```
+
+
+
+
+
+
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read the FASTA file containing the BRCA1 sequence
+fasta_file <- "~/Desktop/sequence.fasta"
+brca1_sequence <- readDNAStringSet(fasta_file)
+
+# Define the start and end positions of exon 1 (hypothetical values)
+exon1_start <- 100
+exon1_end <- 500
+
+# Extract the target sequence of exon 1
+exon1_sequence <- subseq(brca1_sequence, start = exon1_start, end = exon1_end)
+
+# Print the exon 1 sequence
+print(exon1_sequence)
+
+# Define primer design criteria
+primer_length <- 30
+gc_content_range <- c(35, 50)
+
+# Generate candidate primers
+candidate_primers <- DNAStringSet(sample(dna_sequence, size = 1000, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 >= gc_content_range[1] &  # Change made here
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 100 <= gc_content_range[2]  # Change made here
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else { melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 54.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+print(melting_temperatures)
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+   print(candidate_primers)
+}
+```
+
+
+```{r}
+# Load Biostrings package
+library(Biostrings)
+
+# Read the FASTA file containing the BRCA1 sequence
+fasta_file <- "~/Desktop/sequence.fasta"
+brca1_sequence <- readDNAStringSet(fasta_file)
+
+# Define the start and end positions of exon 1 (hypothetical values because i havent figured out the actul values)
+exon1_start <- 100
+exon1_end <- 1000
+
+# Extract the target sequence of exon 1
+exon1_sequence <- subseq(brca1_sequence, start = exon1_start, end = exon1_end)
+
+# Print the exon 1 sequence
+print(exon1_sequence)
+
+# Define primer design criteria
+primer_length <- 20
+gc_content_range <- c(15, 90)
+
+# Generate candidate primers from the exon 1 sequence
+candidate_primers <- DNAStringSet(sample(exon1_sequence, size = 100, replace = TRUE))
+
+# Filter candidate primers based on criteria
+filtered_primers <- candidate_primers[
+  nchar(candidate_primers) == primer_length &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 10 >= gc_content_range[1] &
+  sum(candidate_primers == "G" | candidate_primers == "C") / primer_length * 10 <= gc_content_range[2]
+]
+
+# Check if filtered_primers is empty
+if (length(filtered_primers) == 0) {
+  print("No valid primers found based on the criteria.")
+} else { 
+  melting_temperatures <- sapply(filtered_primers, function(primer) {
+    gc_content <- vcountPattern(primer, "GC") / primer_length * 100
+    Tm <- 54.9 + 41 * (gc_content - 0.5) / (primer_length - 16.4)
+    return(Tm)
+  })
+  print(melting_temperatures)
+  
+  # View the filtered primers and their melting temperatures
+  primer_df <- data.frame(Primer = as.character(filtered_primers), Tm = melting_temperatures)
+  print(primer_df)
+}
+```
